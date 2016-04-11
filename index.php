@@ -9,6 +9,9 @@
  */
 function get_links($links, $depth = 1, $no_dl = false)
 {
+    if (!is_array($links)) {
+        return '';
+    }
     $html = '';
     if (!$no_dl) $html .= str_repeat('    ', $depth - 1) . '<DL><p>' . "\n";
     foreach ($links as $one) {
@@ -35,77 +38,12 @@ function get_links($links, $depth = 1, $no_dl = false)
             $children = isset($one['children']) ? $one['children'] : [];
             $html .= get_links($children, $depth + 1);
         } elseif ($one['type'] == 'url') {
-            $html .= str_repeat('    ', $depth) . '<DT><A HREF="' . $one['url'] . '"' . $add_date . $last_modified . '>' . $one['name'] . '</A>' . "\n";
+            $name = !empty($one['name']) ? $one['name'] : $one['url'];
+            $html .= str_repeat('    ', $depth) . '<DT><A HREF="' . $one['url'] . '"' . $add_date . $last_modified . '>' . $name . '</A>' . "\n";
         }
     }
     if (!$no_dl) $html .= str_repeat('    ', $depth - 1) . '</DL><p>' . "\n";
     return $html;
-}
-
-/**
- * @param string $db_name
- *
- * @return array
- */
-function prepare_db($db_name)
-{
-    $raw_array = [];
-
-    try {
-        $db = new PDO('sqlite:' . $db_name);
-        $sth = $db->query('SELECT * FROM favorites ORDER BY idx, type');
-        if ($sth) {
-            $sth->setFetchMode(PDO::FETCH_ASSOC);
-            while($row = $sth->fetch()) {
-                $raw_array[] = $row;
-            }
-        }
-    } catch (PDOException $e) {
-        //echo $e->getMessage();
-        //exit;
-    }
-
-    $children = build_tree($raw_array, '');
-
-    $array = [
-        [
-            'type' => 'folder',
-            'name' => 'Speed Dial',
-            'children' => $children,
-        ]
-    ];
-
-    return $array;
-}
-
-/**
- * @param array $items
- * @param mixed $parent_guid
- *
- * @return array
- */
-function build_tree($items, $parent_guid)
-{
-    $result = [];
-    foreach ($items as $item) {
-        if ($item['parent_guid'] == $parent_guid) {
-            if ($item['type'] == '1') {
-                $new_item = [
-                    'type' => 'folder',
-                    'name' => $item['name'],
-                ];
-                $new_item['children'] = build_tree($items, $item['guid']);
-            } else {
-                $new_item = [
-                    'type' => 'url',
-                    'name' => $item['name'],
-                    'url' => $item['url'],
-                ];
-            }
-            $result[] = $new_item;
-        }
-    }
-    return $result;
 }
 
 $tmp_path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'temp';
@@ -128,18 +66,7 @@ if (empty($_FILES['file_json']['error']) && !empty($_FILES['file_json']['tmp_nam
     }
 }
 
-// get data from "favorites.db" file
-$db_data = [];
-if (empty($_FILES['file_db']['error']) && !empty($_FILES['file_db']['tmp_name']) && $_FILES['file_db']['tmp_name'] != 'none') {
-    $db_file = $tmp_path . DIRECTORY_SEPARATOR . md5(microtime()) . '.db';
-    move_uploaded_file($_FILES['file_db']['tmp_name'], $db_file);
-    if (is_file($db_file)) {
-        $db_data = prepare_db($db_file);
-        unlink($db_file);
-    }
-}
-
-if (!empty($json_data) || !empty($db_data)) {
+if (!empty($json_data)) {
 
     // https://msdn.microsoft.com/en-us/library/aa753582(v=vs.85).aspx
     $html = <<<HTML
@@ -156,9 +83,6 @@ HTML;
     $html .= '<DL><p>' . "\n";
     if (!empty($json_data) && isset($json_data['roots'])) {
         $html .= get_links($json_data['roots'], 1, true);
-    }
-    if (!empty($db_data)) {
-        $html .= get_links($db_data, 1, true);
     }
     $html .= '</DL>' . "\n";
 
@@ -177,29 +101,29 @@ header('Content-Type: text/html; charset=utf-8');
 <head>
     <meta charset="utf-8">
     <title>Export Opera bookmarks to Html</title>
+    <style>
+        body { font: 14px/1.2 Arial, sans-serif; }
+        a { color: #2b6fb6; text-decoration: none; }
+        a:hover, a:active { color: red; }
+        samp { font-family: Consolas, monospace; }
+    </style>
 </head>
 <body>
 
 <h1>Export Opera bookmarks to Html</h1>
 
-<p>
-    Files location example:<br>
-    Bookmarks: <samp>%APPDATA%\Opera Software\Opera Stable\Bookmarks</samp><br>
-    Speed Dial: <samp>%APPDATA%\Opera Software\Opera Stable\favorites.db</samp>
-</p>
+<p>Default file location: <samp>%APPDATA%\Opera Software\Opera Stable\Bookmarks</samp></p>
 
 <form action="" method="post" enctype="multipart/form-data">
-    <label>Bookmarks: <input type="file" name="file_json"></label><br>
-    <label>favorites.db: <input type="file" name="file_db"></label><br>
-    <br>
-    <input type="submit" name="submit" value="Export to Html">
+    <p><input type="file" name="file_json"></p>
+    <p><input type="submit" name="submit" value="Export to Html"></p>
 </form>
 
 <?php if (isset($_POST['submit'])): ?>
-    <p>Please select file(s).</p>
+    <p>Please select file.</p>
 <?php endif; ?>
 
-<p><small><a href="https://github.com/alexantr/export-opera-bookmarks">View on GitHub</a></small></p>
+<p><small><a href="https://github.com/alexantr/export-opera-bookmarks">View source on GitHub</a></small></p>
 
 </body>
 </html>
