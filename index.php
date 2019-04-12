@@ -100,7 +100,7 @@ header('Content-Type: text/html; charset=utf-8');
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Export Opera bookmarks to Html</title>
+    <title>Export Chrome &amp; Opera bookmarks to HTML</title>
     <style>
         body { font: 14px/1.2 Arial, sans-serif; }
         a { color: #2b6fb6; text-decoration: none; }
@@ -110,9 +110,10 @@ header('Content-Type: text/html; charset=utf-8');
 </head>
 <body>
 
-<h1>Export Opera bookmarks to Html</h1>
+<h1>Export Chrome &amp; Opera bookmarks to HTML</h1>
 
-<p>Default file location: <samp>%APPDATA%\Opera Software\Opera Stable\Bookmarks</samp></p>
+<p>Default Chrome file location: <samp>%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks</samp><br>
+    Default Opera file location: <samp>%APPDATA%\Opera Software\Opera Stable\Bookmarks</samp></p>
 
 <form action="" method="post" enctype="multipart/form-data">
     <p><input type="file" name="file_json"></p>
