@@ -1,4 +1,4 @@
 # export-opera-bookmarks
-Export Opera bookmarks to Html
+Export Chrome & Opera bookmarks to HTML
 
-[Demo](http://yashkin.by/bookmarks/)
+[Go to page](https://yashkin.by/bookmarks/)
