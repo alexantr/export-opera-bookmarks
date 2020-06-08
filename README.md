@@ -1,4 +1,3 @@
-# export-opera-bookmarks
-Export Chrome & Opera bookmarks to HTML
+# Export Chromium bookmarks to HTML
 
-[Go to page](https://yashkin.by/bookmarks/)
+[Go to page](https://tmpfiles.xyz/export-bookmarks/)

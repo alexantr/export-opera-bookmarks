@@ -4,7 +4,6 @@
  * @param array $links
  * @param int $depth
  * @param bool $no_dl
- *
  * @return string
  */
 function get_links($links, $depth = 1, $no_dl = false)
@@ -39,7 +38,7 @@ function get_links($links, $depth = 1, $no_dl = false)
             $html .= get_links($children, $depth + 1);
         } elseif ($one['type'] == 'url') {
             $name = !empty($one['name']) ? $one['name'] : $one['url'];
-            $html .= str_repeat('    ', $depth) . '<DT><A HREF="' . $one['url'] . '"' . $add_date . $last_modified . '>' . $name . '</A>' . "\n";
+            $html .= str_repeat('    ', $depth) . '<DT><A HREF="' . $one['url'] . '"' . $add_date . $last_modified . '>' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</A>' . "\n";
         }
     }
     if (!$no_dl) $html .= str_repeat('    ', $depth - 1) . '</DL><p>' . "\n";
@@ -78,7 +77,6 @@ if (!empty($json_data)) {
 <TITLE>Bookmarks</TITLE>
 <H1>Bookmarks</H1>
 
-
 HTML;
     $html .= '<DL><p>' . "\n";
     if (!empty($json_data) && isset($json_data['roots'])) {
@@ -86,10 +84,12 @@ HTML;
     }
     $html .= '</DL>' . "\n";
 
+    $filename = 'bookmarks_' . date('Y-m-d') . '.html';
+
     // response
-    header('Content-Disposition: attachment; filename="bookmarks.html"');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Content-Length: ' . mb_strlen($html, '8bit'));
-    header('Content-Type: application/x-force-download; name="bookmarks.html"');
+    header('Content-Type: application/x-force-download; name="' . $filename . '"');
     echo $html;
     exit;
 }
@@ -100,24 +100,27 @@ header('Content-Type: text/html; charset=utf-8');
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Export Chrome &amp; Opera bookmarks to HTML</title>
+    <title>Export Chromium bookmarks to HTML</title>
     <style>
-        body { font: 14px/1.2 Arial, sans-serif; }
+        body { font: 14px/1.4 'Segoe UI', Arial, Helvetica, sans-serif; }
         a { color: #2b6fb6; text-decoration: none; }
         a:hover, a:active { color: red; }
         samp { font-family: Consolas, monospace; }
+        h1 { font-weight: 600; }
+        small { font-size: 13px; }
     </style>
 </head>
 <body>
 
-<h1>Export Chrome &amp; Opera bookmarks to HTML</h1>
+<h1>Export Chromium bookmarks to HTML</h1>
 
 <p>Default Chrome file location: <samp>%LOCALAPPDATA%\Google\Chrome\User Data\Default\Bookmarks</samp><br>
-    Default Opera file location: <samp>%APPDATA%\Opera Software\Opera Stable\Bookmarks</samp></p>
+    Default Opera file location: <samp>%APPDATA%\Opera Software\Opera Stable\Bookmarks</samp><br>
+    Default Edge file location: <samp>%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Bookmarks</samp></p>
 
 <form action="" method="post" enctype="multipart/form-data">
     <p><input type="file" name="file_json"></p>
-    <p><input type="submit" name="submit" value="Export to Html"></p>
+    <p><input type="submit" name="submit" value="Export to HTML"></p>
 </form>
 
 <?php if (isset($_POST['submit'])): ?>
